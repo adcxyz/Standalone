@@ -1,0 +1,9 @@
+(
+	\name: "Standalone",
+	\path: "Standalone",
+	\summary: "Keep SC3-based apps for macOS self-contained.",
+	\author: "Alberto de Campo",
+	\version: 0.1,
+	\organization: "Institute for time-based media, UdK Berlin",
+	\since: "2017"
+)

@@ -1,0 +1,120 @@
+TITLE:: Standalone
+summary:: Keep macOS Standalone apps fully self-contained.
+categories:: Undocumented classes
+related:: Classes/LanguageConfig
+
+DESCRIPTION::
+The Standalone quark allows locking an OSX Standalone exported from SuperCollider.
+
+First, install tis quark:
+Quarks.install("Standalone");
+Quarks.install("~/scgit/adc_quarks/Standalone");
+
+Then follow the guide here: link::Guides/OSX_Standalones:: to make your StandAlone.app.
+
+Then, in the StandAlone.app, you can lock it with a single line:
+code::
+// Standalone.activate;
+::
+and after rebooting the interpreter, it will remain locked.
+
+Note:: Don't do this in your working SC environment! If you want to try it immediately, make a new sclang conf file in the Preferences/Interpreter first (maybe code:: sclang_conf_standytest.yaml::), and switch to it; then you can safely try locking,
+and later delete that config file.
+::
+
+
+This operation moves the Standalone.sc file into the SCClassLibrary (so it remains present), removes all includePaths (where quarks and extensions live), excludes the standard extensionPaths (so the app ignores those), and adds an internal directory for extensions inside the app.
+
+When you reboot the interpreter now (in StandAlone.app), this means it will remain locked, and not look for any other folder for quarks.
+
+You can turn this checking function off again by doing:
+code::
+Standalone.unlock;
+::
+
+CLASSMETHODS::
+
+METHOD:: activate
+Turn the current app into a selfcontained standalone.
+
+METHOD:: lock, unlock
+Turn checking for paths on startup on and off.
+
+METHOD:: locksOnStartup
+a flag whether Standalone will check for locking on startup
+code::
+Standalone.locksOnStartup;
+::
+
+subsection:: Internal Methods
+
+METHOD:: initClass
+
+Standalone will check for self-containedness on startup if lock file is present.
+
+METHOD:: lockupFilename
+METHOD:: lockupPath
+the filename and path for the lock file (inside String.scDir)
+code::
+Standalone.lockupFilename;
+Standalone.lockupPath;
+::
+
+METHOD:: internalExtDirName
+METHOD:: internalExtDir
+the folder name and path for the internal Extentions dir (inside String.scDir)
+code::
+Standalone.internalExtDirName;
+Standalone.internalExtDir;
+::
+
+METHOD:: isInClassLib
+checks whether Standalone.sc is already in the default SCClassLibrary
+
+METHOD:: moveToClassLib
+moves Standalone.sc to the default SCClassLibrary
+
+METHOD:: checkAndSetPaths
+check whether includePaths and excludePaths are set for self-containment.
+
+METHOD:: clearIncludePaths
+remove all includePaths except internalExtDir
+
+METHOD:: excludeExternalExtDirs
+exclude userAppSupportDir and .ystemAppSupportDir
+
+METHOD:: includeInternalExtDir
+add internalExtDir to includePaths
+
+METHOD:: stopAndProposeReboot
+post warning and instruct user to reboot interpreter,
+used after changes to LanguageConfig that require it.
+
+subsection::Tests
+code::
+Standalone.isInClassLib; // true when already there
+Standalone.moveToClassLib; // move if not there
+
+Standalone.lockupFilename; // lockup file name, path, presence
+Standalone.lockupPath;
+Standalone.locksOnStartup;
+Standalone.lock;		   // creates lockup file
+Standalone.locksOnStartup;
+Standalone.unlock;
+Standalone.locksOnStartup; // removes lockup file
+
+Standalone.internalExtDir.openOS; // already there?
+
+LanguageConfig.currentPath.openOS; // curr config file
+
+
+Standalone.clearIncludePaths;
+LanguageConfig.includePaths;
+
+Standalone.excludeExternalExtDirs;
+LanguageConfig.excludePaths;
+
+Standalone.includeInternalExtDir;
+// do everything in one go
+Standalone.activate;
+::
