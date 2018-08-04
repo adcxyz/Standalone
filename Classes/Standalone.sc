@@ -130,12 +130,27 @@ s.waitForBoot { Pbind('degree', Pseries([0, 2, 4], 1, 8), 'dur', 0.125).play }
 	}
 
 	*isInClassLib { |post = true|
-		var res = this.filenameSymbol.asString.dirname.contains("SCClassLibrary");
-		if (res.not and: post) {
-			"*** Standalone.sc is not in class lib yet.\n"
-			"// Please move it there to use it:\n"
-			"Standalone.moveToClassLib;\n"
-			"thisProcess.recompile;".postln;
+		var res = this.filenameSymbol.asString.beginsWith(
+			String.scDir +/+ "SCClassLibrary");
+		if (post) {
+			if (res.not) {
+				"*** Standalone.sc is not in SCClassLibrary yet.\n"
+				"// If you are in a Standalone already, you can move it there to use it:\n"
+				"Standalone.moveToClassLib;\n"
+				"thisProcess.recompile;".postln
+			} {
+				"*** Standalone.sc is already in SCClassLibrary.\n"
+				.postln
+			}
+		};
+		^res
+	}
+
+	*isInIntExt { |post = true|
+		var res = this.filenameSymbol.asString.beginsWith("internalExtDir");
+		if (post) {
+			"*** Standalone.sc is %in .../Resources/InternalExtensions.\n"
+			.postf(if (res, "", "_NOT_ "));
 		};
 		^res
 	}
@@ -146,20 +161,26 @@ s.waitForBoot { Pbind('degree', Pseries([0, 2, 4], 1, 8), 'dur', 0.125).play }
 		var currPath, newPath;
 		var classFile, codeString;
 		var schelpPath, newSchelpPath;
+		var copyCmd = "cp";
 		if (this.isInClassLib(false)) { ^false };
+		// if already internalized, move it instead of copying,
+		// to avoid discrepancy on next recompile
+		if (this.isInIntExt(false)) { copyCmd = "mv" };
 
 		currPath = this.filenameSymbol.asString;
 		newPath = String.scDir +/+ "SCClassLibrary/" +/+ currPath.basename;
 
 		if (currPath != newPath) {
-			"*** Standalone.sc is moved to internal class lib: ***".postln;
-			unixCmd(("mv -f" + quote(currPath) + quote(newPath)).postcs);
+			"*** moving Standalone.sc to internal class lib: ***".postln;
+			unixCmd((copyCmd + "-f" + quote(currPath) + quote(newPath)).postcs);
 
 			schelpPath = Standalone.filenameSymbol.asString.dirname.dirname
 			+/+ "HelpSource/Standalone.schelp";
 			if(File.exists(schelpPath)) {
+				"*** moving Standalone.schelp to internal HelpSource: ***".postln;
 				newSchelpPath = String.scDir +/+ "HelpSource/Standalone.schelp";
-				unixCmd(("mv -f" + quote(schelpPath) + quote(newSchelpPath)).postcs);
+				unixCmd((copyCmd + "-f" + quote(schelpPath)
+					+ quote(newSchelpPath)).postcs);
 			}
 		};
 		^true
@@ -223,7 +244,7 @@ s.waitForBoot { Pbind('degree', Pseries([0, 2, 4], 1, 8), 'dur', 0.125).play }
 		^changed
 	}
 
-	*stopAndProposeReboot {
+	*prStopAndProposeReboot {
 
 		"*** PLEASE REBOOT INTERPRETER NOW! ***".postln;
 		"*** Standalone should boot normally then. ***".postln;
