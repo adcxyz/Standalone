@@ -1,25 +1,45 @@
 TITLE:: Standalone
 summary:: Keep macOS Standalone apps fully self-contained.
-categories:: Undocumented classes
-related:: Classes/LanguageConfig
+categories:: Standalone
+related:: Classes/LanguageConfig, Guides/standalones
 
 DESCRIPTION::
-The Standalone quark allows locking an OSX Standalone exported from SuperCollider.
+The Standalone quark allows locking a macOS Standalone exported from SuperCollider.
 
-First, install tis quark:
+First, install this quark:
+code::
 Quarks.install("Standalone");
 Quarks.install("~/scgit/adc_quarks/Standalone");
-
-Then follow the guide here: link::Guides/OSX_Standalones:: to make your StandAlone.app.
-
-Then, in the StandAlone.app, you can lock it with a single line:
-code::
-// Standalone.activate;
+// then reboot interpreter...
 ::
+
+Eventually, convenient one-line exporting will work,
+but this is not finished yet:
+code::
+Standalone.export("Test123");
+::
+This should end with opening the new app, and playing a little line of chords when all is well.
+
+When direct exporting fails, please follow the guide here:
+link::Guides/standalones::
+1. create a basic <MyStandalone>.app, with internal startup file;
+2. create an InternalExtensions folder inside the new app
+3. copy the installed quarks and extensions there
+---> including the Standalone quark!
+4.
+
+// Then, in the new standalone app, run this:
+code::
+LanguageConfig.addIncludePath(String.scDir +/+ "InternalExtensions");
+LanguageConfig.store;
+// and reboot interpreter ...
+// then lock the Standalone app with a single line:
+Standalone.activate;
+::
+
 and after rebooting the interpreter, it will remain locked.
 
-Note:: Don't do this in your working SC environment! If you want to try it immediately, make a new sclang conf file in the Preferences/Interpreter first (maybe code:: sclang_conf_standytest.yaml::), and switch to it; then you can safely try locking,
-and later delete that config file.
+Note:: Don't do this in your working SC environment! If you want to try it immediately, make a new sclang conf file in the Preferences/Interpreter first (maybe code:: sclang_conf_standytest.yaml::), and switch to it; then you can safely try locking, and later delete that config file.
 ::
 
 
@@ -34,11 +54,23 @@ Standalone.unlock;
 
 CLASSMETHODS::
 
+strong::NOT FULLY WORKING YET: ::
+METHOD:: export
+export current SuperCollider app and its quark setup as a standalone.
+
+METHOD:: appName
+the name of the current app
+code::
+Standalone.appName
+::
+
 METHOD:: activate
 Turn the current app into a selfcontained standalone.
 
 METHOD:: lock, unlock
 Turn checking for paths on startup on and off.
+
+METHOD:: activate
 
 METHOD:: locksOnStartup
 a flag whether Standalone will check for locking on startup
@@ -49,7 +81,6 @@ Standalone.locksOnStartup;
 subsection:: Internal Methods
 
 METHOD:: initClass
-
 Standalone will check for self-containedness on startup if lock file is present.
 
 METHOD:: lockupFilename
@@ -70,6 +101,14 @@ Standalone.internalExtDir;
 
 METHOD:: isInClassLib
 checks whether Standalone.sc is already in the default SCClassLibrary
+code::
+Standalone.isInClassLib;
+::
+METHOD:: isInIntExt
+checks whether Standalone.sc is in the InternalExtensions folder
+code::
+Standalone.isInIntExt;
+::
 
 METHOD:: moveToClassLib
 moves Standalone.sc to the default SCClassLibrary
@@ -81,14 +120,22 @@ METHOD:: clearIncludePaths
 remove all includePaths except internalExtDir
 
 METHOD:: excludeExternalExtDirs
-exclude userAppSupportDir and .ystemAppSupportDir
+exclude userAppSupportDir and systemAppSupportDir
 
 METHOD:: includeInternalExtDir
 add internalExtDir to includePaths
 
-METHOD:: stopAndProposeReboot
-post warning and instruct user to reboot interpreter,
-used after changes to LanguageConfig that require it.
+METHOD:: startupFileText
+return default codestring for making a code::startupFiles:: method
+
+METHOD:: startupFileText
+return default codestring for making a code::startup.scd:: file
+
+METHOD:: checkAndSetDirPaths
+check and set dirPaths for standalone if needed.
+returns flag true when changes were made.
+
+private:: prStopAndProposeReboot
 
 subsection::Tests
 code::
@@ -98,6 +145,7 @@ Standalone.moveToClassLib; // move if not there
 Standalone.lockupFilename; // lockup file name, path, presence
 Standalone.lockupPath;
 Standalone.locksOnStartup;
+// this only works when copied to
 Standalone.lock;		   // creates lockup file
 Standalone.locksOnStartup;
 Standalone.unlock;
@@ -107,7 +155,7 @@ Standalone.internalExtDir.openOS; // already there?
 
 LanguageConfig.currentPath.openOS; // curr config file
 
-
+//
 Standalone.clearIncludePaths;
 LanguageConfig.includePaths;
 
