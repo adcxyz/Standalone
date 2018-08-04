@@ -9,6 +9,126 @@ Standalone {
 		if (this.locksOnStartup) { this.activate };
 	}
 
+	////////// NOT WORKING YET
+	// - STILL GETS SuperCollider userAppSupportDir sometimes - why?!?
+
+	*export { |newAppName = "StehAllein", location = "~/Desktop/"|
+
+		// make some needed paths and folders
+		var newAppLocation = location.standardizePath;
+		var pathToThisApp = String.scDir.dirname.dirname;
+		var thisAppName = pathToThisApp.basename.splitext.first;
+		var pathToNewApp = newAppLocation +/+ newAppName ++ ".app";
+		var newAppResDir = pathToNewApp +/+ "Contents/Resources";
+		var newAppSupportDir = Platform.userConfigDir.dirname +/+ newAppName;
+
+		var infoPListPath = pathToNewApp +/+ "Contents/Info.plist";
+		var infoString, executableIndex, nameToReplace, newInfoString;
+		var overWritesDir;
+
+		if (File.exists(pathToNewApp)) {
+			"App at % already exists! please delete or move it elsewhere before exporting.".warn;
+			^this
+		};
+
+		forkIfNeeded {
+			var cond = Condition();
+
+			// copying the current app with new name to new location:
+			"% - copying new app to:".postf(thisMethod);
+			unixCmd(("cp -ir"
+				+ quote(pathToThisApp.postcs)
+				+ quote(pathToNewApp.postcs)), { cond.unhang }
+			);
+			cond.hang;
+
+			if (newAppLocation.pathMatch.isEmpty) {
+				"% - copying app failed! stopping export.".postln;
+				^this
+			};
+
+			File.mkdir(newAppSupportDir);
+
+			0.2.wait;
+
+			///////// FIXUPS in the new app:
+			// a. change the Info.plist file by replacing the app name:
+			// get its string, replace the SC names, write it out again
+
+			if (infoPListPath.pathMatch.isEmpty) {
+				"infoPlist file not dound! stopping export.".warn;
+				^this
+			};
+
+			infoString = File.use(infoPListPath, "r", (_.readAllString));
+			executableIndex = infoString.find("<key>CFBundleExecutable</key>");
+			nameToReplace = infoString.copyRange(
+				infoString.find("<string>", offset: executableIndex) + 8,
+				infoString.find("</string>", offset: executableIndex) - 1
+			);
+
+			"replacing bundleName % in plist file found at these indices: "
+			.postf(nameToReplace.cs);
+			infoString.findAll(nameToReplace).postln;
+
+			newInfoString = infoString.replace( nameToReplace, newAppName );
+			unixCmdGetStdOut("mv" + quote(infoPListPath) + quote(infoPListPath ++ "BK"));
+			File.use(infoPListPath, "w", { |f| f.write(newInfoString) });
+
+			// b. rename the binary file to match:
+			"renaming macos binary to: ".post;
+			// fixups in the new app - 2. rename the binary inside the app folder
+			unixCmdGetStdOut("mv -i"
+				+ quote(pathToNewApp +/+ "Contents/MacOS/" +/+ nameToReplace)
+				+ quote(pathToNewApp +/+ "Contents/MacOS/" ++ newAppName)
+			);
+
+			0.2.wait;
+
+			// 4. write a class extension file to look for the startupFile
+			// in the app itself, in String.scDir for self-containment.
+			overWritesDir = newAppResDir +/+ "SCClassLibrary/SystemOverwrites";
+			File.mkdir(overWritesDir);
+			File.use((overWritesDir +/+ "extModStartupFile.sc").postcs, "w", { |f|
+				f.write(this.startupExtCode)
+			});
+
+			// 5. write a basic startupFile:
+			File.use((newAppResDir +/+ "startup.scd").postcs, "w", { |f|
+				f.write(this.startupFileText)
+			});
+
+			0.2.wait;
+
+			(3..0).do { |i| if (i.postln > 0) { 1.wait } };
+			// wakeup kiss:
+			unixCmd("open" + pathToNewApp);
+
+		}
+	}
+
+	*appName { ^String.scDir.dirname.dirname.basename.splitext.first }
+
+	*startupExtCode {
+		^
+		"+ OSXPlatform {
+startupFiles {
+^[String.scDir +/+ \"startup.scd\"]
+}
+}"
+	}
+
+	*startupFileText {
+		^
+		"// basic startup file for macOS standalone.
+if (Platform.userAppSupportDir.contains(Standalone.appName)) {
+'YUHU! app if independent!'.postln;
+s.waitForBoot { Pbind('degree', Pseries([0, 2, 4], 1, 8), 'dur', 0.125).play }
+} {
+'OH NO! app still uses SuperCollider userAppSupportDir ...'.postln;
+};"
+	}
+
 	*isInClassLib { |post = true|
 		var res = this.filenameSymbol.asString.dirname.contains("SCClassLibrary");
 		if (res.not and: post) {
