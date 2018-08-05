@@ -24,7 +24,7 @@ Standalone {
 
 		var infoPListPath = pathToNewApp +/+ "Contents/Info.plist";
 		var infoString, executableIndex, nameToReplace, newInfoString;
-		var overWritesDir;
+		var overWritesDir, newIntExtDir;
 
 		if (File.exists(pathToNewApp)) {
 			"App at % already exists! please delete or move it elsewhere before exporting.".warn;
@@ -55,8 +55,9 @@ Standalone {
 			// a. change the Info.plist file by replacing the app name:
 			// get its string, replace the SC names, write it out again
 
+			"\n% - FIXUPS in the new app: \n".postf(thisMethod);
 			if (infoPListPath.pathMatch.isEmpty) {
-				"infoPlist file not dound! stopping export.".warn;
+				"infoPlist file not found! stopping export.".warn;
 				^this
 			};
 
@@ -76,7 +77,7 @@ Standalone {
 			File.use(infoPListPath, "w", { |f| f.write(newInfoString) });
 
 			// b. rename the binary file to match:
-			"renaming macos binary to: ".post;
+			"renaming the macOS binary to: ".post;
 			// fixups in the new app - 2. rename the binary inside the app folder
 			unixCmdGetStdOut("mv -i"
 				+ quote(pathToNewApp +/+ "Contents/MacOS/" +/+ nameToReplace)
@@ -87,6 +88,7 @@ Standalone {
 
 			// 4. write a class extension file to look for the startupFile
 			// in the app itself, in String.scDir for self-containment.
+			"\n% - write startup method and initial file: \n".postf(thisMethod);
 			overWritesDir = newAppResDir +/+ "SCClassLibrary/SystemOverwrites";
 			File.mkdir(overWritesDir);
 			File.use((overWritesDir +/+ "extModStartupFile.sc").postcs, "w", { |f|
@@ -98,16 +100,36 @@ Standalone {
 				f.write(this.startupFileText)
 			});
 
-			0.2.wait;
+			0.5.wait;
 
+			// copy quarks dir:
+			"\n% - copying quarks: \n".postf(thisMethod);
+			newIntExtDir = newAppResDir +/+ internalExtDirName;
+			File.mkdir(newIntExtDir);
+			LanguageConfig.includePaths.do { |path|
+				unixCmdGetStdOut("cp"
+					+ quote(path.postln)
+					+ quote(newIntExtDir +/+ path.basename).postln
+				);
+			};
+
+			"\n% - countdown for wakeup kiss: \n".postf(thisMethod);
 			(3..0).do { |i| if (i.postln > 0) { 1.wait } };
 			// wakeup kiss:
 			unixCmd("open" + pathToNewApp);
 
+
+
 		}
 	}
 
-	*appName { ^String.scDir.dirname.dirname.basename.splitext.first }
+	*appPath { ^String.scDir.dirname.dirname }
+	*appDir { ^this.appPath.dirname }
+	*appName { ^this.appPath.basename.splitext.first }
+
+	*openStartup {
+		unixCmd("open" + quote(thisProcess.platform.startupFiles[0]))
+	}
 
 	*startupExtCode {
 		^
@@ -120,9 +142,10 @@ startupFiles {
 
 	*startupFileText {
 		^
-		"// basic startup file for macOS standalone.
+		"// initial startup file for macOS standalone.
 if (Platform.userAppSupportDir.contains(Standalone.appName)) {
 'YUHU! app if independent!'.postln;
+unixCmd(\"say Welcome to % standalone!\".format(Standalone.appName));
 s.waitForBoot { Pbind('degree', Pseries([0, 2, 4], 1, 8), 'dur', 0.125).play }
 } {
 'OH NO! app still uses SuperCollider userAppSupportDir ...'.postln;
