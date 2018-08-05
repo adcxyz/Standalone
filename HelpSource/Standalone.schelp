@@ -4,64 +4,67 @@ categories:: Standalone
 related:: Classes/LanguageConfig, Guides/standalones
 
 DESCRIPTION::
-The Standalone quark allows locking a macOS Standalone exported from SuperCollider.
+The Standalone quark allows exporting a fully self-contained
+macOS Standalone from a setup in a SuperCollider environment,
+and locking it against accidental installation changes.
 
-First, install this quark:
+First quick example - install this quark:
 code::
 Quarks.install("Standalone");
 Quarks.install("~/scgit/adc_quarks/Standalone");
-// then reboot interpreter...
+// then reboot interpreter, then export
 ::
-
-Eventually, convenient one-line exporting will work,
-but this is not finished yet:
 code::
 Standalone.export("Test123");
 ::
 This should end with opening the new app, and playing a little line of chords when all is well.
-
-When direct exporting fails, please follow the guide here:
+Should direct exporting fail (sometimes it does), please follow the guide here:
 link::Guides/standalones::
+and do these steps by hand with the scripts provided:
 1. create a basic <MyStandalone>.app, with internal startup file;
 2. create an InternalExtensions folder inside the new app
-3. copy the installed quarks and extensions there
----> including the Standalone quark!
-4.
+3. copy the installed quarks and extensions there,
+---> INCLUDING the Standalone quark!
 
-// Then, in the new standalone app, run this:
+// Then, IN THE NEW STANDALONE APP, run this to finish:
 code::
-LanguageConfig.addIncludePath(String.scDir +/+ "InternalExtensions");
-LanguageConfig.store;
-// and reboot interpreter ...
-// then lock the Standalone app with a single line:
-Standalone.activate;
+// Standalone.activate;
 ::
 
-and after rebooting the interpreter, it will remain locked.
+... and after rebooting the interpreter, it will remain locked.
 
-Note:: Don't do this in your working SC environment! If you want to try it immediately, make a new sclang conf file in the Preferences/Interpreter first (maybe code:: sclang_conf_standytest.yaml::), and switch to it; then you can safely try locking, and later delete that config file.
+Note:: Don't do this in your working SC environment! You will overwrite your current
+interpreter preferences. If you want to try it immediately, make a new sclang conf file in the Preferences/Interpreter first (maybe code:: sclang_conf_standytest.yaml::), and switch to it; then you can safely try locking, and later delete that config file.
 ::
-
 
 This operation moves the Standalone.sc file into the SCClassLibrary (so it remains present), removes all includePaths (where quarks and extensions live), excludes the standard extensionPaths (so the app ignores those), and adds an internal directory for extensions inside the app.
 
 When you reboot the interpreter now (in StandAlone.app), this means it will remain locked, and not look for any other folder for quarks.
 
-You can turn this checking function off again by doing:
+You can turn this checking function off again in the Standalone by doing:
 code::
-Standalone.unlock;
+// Standalone.unlock;
 ::
 
 CLASSMETHODS::
 
-strong::NOT FULLY WORKING YET: ::
 METHOD:: export
 export current SuperCollider app and its quark setup as a standalone.
+strong::exporting may sometimes fail for unknown reasons. please report if that happens. : ::
 
 METHOD:: appName
 the name of the current app
+
+METHOD:: appPath
+the path to the current app
+
+METHOD:: appDir
+the dir where the current app is
+
 code::
 Standalone.appName
+Standalone.appPath
+Standalone.appDir
 ::
 
 METHOD:: activate
