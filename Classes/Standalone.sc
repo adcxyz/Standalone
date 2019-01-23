@@ -27,7 +27,7 @@ Standalone {
 		var overWritesDir, newIntExtDir;
 
 		if (File.exists(pathToNewApp)) {
-			"App at % already exists! please delete or move it elsewhere before exporting.".warn;
+			"App at % already exists! please delete or move it elsewhere before exporting.".format(pathToNewApp).warn;
 			^this
 		};
 
