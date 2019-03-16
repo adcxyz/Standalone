@@ -169,6 +169,46 @@ Standalone {
 		^res
 	}
 
+	*isInIntExt { |post = true|
+		var res = this.filenameSymbol.asString.beginsWith("internalExtDir");
+		if (post) {
+			"*** Standalone.sc is %in .../Resources/InternalExtensions.\n"
+			.postf(if (res, "", "_NOT_ "));
+		};
+		^res
+	}
+
+	// this happens when already moved to internalExtDir,
+	// so better to move the files rather than copying them.
+	*moveToClassLib {
+		var currPath, newPath;
+		var classFile, codeString;
+		var schelpPath, newSchelpPath;
+		var copyCmd = "cp";
+		if (this.isInClassLib(false)) { ^false };
+		// if already internalized, move it instead of copying,
+		// to avoid discrepancy on next recompile
+		if (this.isInIntExt(false)) { copyCmd = "mv" };
+
+		currPath = this.filenameSymbol.asString;
+		newPath = String.scDir +/+ "SCClassLibrary/" +/+ currPath.basename;
+
+		if (currPath != newPath) {
+			"*** moving Standalone.sc to internal class lib: ***".postln;
+			unixCmd((copyCmd + "-f" + quote(currPath) + quote(newPath)).postcs);
+
+			schelpPath = Standalone.filenameSymbol.asString.dirname.dirname
+			+/+ "HelpSource/Standalone.schelp";
+			if(File.exists(schelpPath)) {
+				"*** moving Standalone.schelp to internal HelpSource: ***".postln;
+				newSchelpPath = String.scDir +/+ "HelpSource/Standalone.schelp";
+				unixCmd((copyCmd + "-f" + quote(schelpPath)
+					+ quote(newSchelpPath)).postcs);
+			}
+		};
+		^true
+	}
+
 	*lockupPath { ^( String.scDir +/+ lockupFilename) }
 
 	*locksOnStartup {
@@ -214,7 +254,7 @@ Standalone {
 		};
 		if (changed) {
 			"*** Standalone is active and uses only internal Extensions. ***".postln;
-			this.stopAndProposeReboot;
+			this.prStopAndProposeReboot;
 		};
 	}
 
