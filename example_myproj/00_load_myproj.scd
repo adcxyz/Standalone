@@ -50,34 +50,3 @@ Task {
 	};
 
 }.play(AppClock);
-
-s.w {
-	Task {
-
-		1.wait;
-		s.sync;
-
-		q.load("2_mutation/ToyDataMutation.scd");
-
-		0.5.wait;
-
-		///////////////// dont run the tasks themselves
-		// q.load("/1_Arabidopsis/Arabidopsis.scd");
-		// 0.5.wait;
-		// q.load("3_Weizen/Winterweizen.scd");
-		// 0.5.wait;
-		// q.load("4_*/Patatareife.scd");
-
-		q.load("browsergui_interface.scd");
-
-		// test for installation on old MacPro:
-		1.wait;
-
-		// q.load("PlantiSonicsApp/gui_sketches/Arabidopsis_lines.scd", "", "", 1);
-		q.load("9_GUI/gui_masta.scd");
-		// Tdef('arabiGenom').play;
-
-		"*** PlantiSonicsApp startup done! ***".postln;
-	}.play(AppClock);
-};
-
