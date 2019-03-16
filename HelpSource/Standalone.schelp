@@ -15,36 +15,10 @@ Quarks.install("~/scgit/adc_quarks/Standalone");
 // then reboot interpreter, then export
 ::
 code::
-Standalone.export("Test123");
+Standalone.export("MyLittleLony");
 ::
 This should end with opening the new app, and playing a little line of chords when all is well.
-Should direct exporting fail (sometimes it does), please follow the guide here:
-link::Guides/standalones::
-and do these steps by hand with the scripts provided:
-1. create a basic <MyStandalone>.app, with internal startup file;
-2. create an InternalExtensions folder inside the new app
-3. copy the installed quarks and extensions there,
----> INCLUDING the Standalone quark!
 
-// Then, IN THE NEW STANDALONE APP, run this to finish:
-code::
-// Standalone.activate;
-::
-
-... and after rebooting the interpreter, it will remain locked.
-
-Note:: Don't do this in your working SC environment! You will overwrite your current
-interpreter preferences. If you want to try it immediately, make a new sclang conf file in the Preferences/Interpreter first (maybe code:: sclang_conf_standytest.yaml::), and switch to it; then you can safely try locking, and later delete that config file.
-::
-
-This operation moves the Standalone.sc file into the SCClassLibrary (so it remains present), removes all includePaths (where quarks and extensions live), excludes the standard extensionPaths (so the app ignores those), and adds an internal directory for extensions inside the app.
-
-When you reboot the interpreter now (in StandAlone.app), this means it will remain locked, and not look for any other folder for quarks.
-
-You can turn this checking function off again in the Standalone by doing:
-code::
-// Standalone.unlock;
-::
 
 CLASSMETHODS::
 
@@ -140,7 +114,11 @@ returns flag true when changes were made.
 
 private:: prStopAndProposeReboot
 
+
 subsection::Tests
+
+Most of these should not be neceassary, because export works well now.
+
 code::
 Standalone.isInClassLib; // true when already there
 Standalone.moveToClassLib; // move if not there
