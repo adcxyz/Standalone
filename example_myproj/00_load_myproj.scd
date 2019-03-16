@@ -22,6 +22,9 @@ Task {
 
 
 	s.waitForBoot {
+
+		Pbind('degree', Pseries([0, 2, 4], 1, 8), 'dur', 0.125).play;
+
 		0.5.wait;
 		// load all patches that need a running server;
 		q.load("02_processes/*.scd");
@@ -42,6 +45,7 @@ Task {
 
 		s.volume.volume = 0;
 
+		Pbind('degree', Pseries([0, 2, 4], 1, 8), 'dur', 0.125).play;
 
 	};
 
