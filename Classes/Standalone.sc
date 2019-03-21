@@ -100,6 +100,37 @@ Standalone {
 
 			0.2.wait;
 
+			// copy quarks dir:
+			"\n% - copying all installed quarks: \n".postf(thisMethod);
+			newIntExtDir = newAppResDir +/+ internalExtDirName;
+			File.mkdir(newIntExtDir);
+
+			LanguageConfig.includePaths.reject { |path| (path.contains("Standalone")) }.do { |path|
+				var baseDirs = [ "SCClassLibrary", "HelpSource"];
+				var baseDir = baseDirs.detect(path.contains(_)).postln;
+
+				if (baseDir.notNil) {
+					"moving default dir % out of the way...".postf(baseDir);
+					unixCmdGetStdOut("mv"
+						+ quote(newAppResDir +/+ baseDir)
+						+ quote(newAppResDir +/+ baseDir ++ "_ORIG_").postln
+					);
+
+					"moving external dev dir % in place...".postf(baseDir);
+					unixCmdGetStdOut("cp -R"
+						+ quote(path.postln)
+						+ quote(newAppResDir +/+ baseDir).postln
+					);
+				} {
+					//
+					unixCmdGetStdOut("cp -R"
+						+ quote(path.postln)
+						+ quote(newIntExtDir +/+ path.basename).postln
+					);
+				}
+			};
+
+			0.2.wait;
 
 			// 4. move the Standalone quark into SCClassLibrary:
 			"\n% - installing Standalone in new classlib: \n".postf(thisMethod);
@@ -116,19 +147,6 @@ Standalone {
 				+ quote(newAppResDir +/+  "startup.scd").postln));
 			unixCmd(("cp" + quote(Standalone.codefiledir +/+ "extPlatform.scd")
 				+ quote(overWritesDir +/+  "extPlatform.sc").postln));
-
-			0.2.wait;
-
-			// copy quarks dir:
-			"\n% - copying all installed quarks: \n".postf(thisMethod);
-			newIntExtDir = newAppResDir +/+ internalExtDirName;
-			File.mkdir(newIntExtDir);
-			LanguageConfig.includePaths.reject { |path| (path.contains("Standalone")) }.do { |path|
-				unixCmdGetStdOut("cp -R"
-					+ quote(path.postln)
-					+ quote(newIntExtDir +/+ path.basename).postln
-				);
-			};
 
 			"copying example project next to app...".postln;
 			unixCmd(("cp -R" + quote(Standalone.dir +/+ "example_myproj")
