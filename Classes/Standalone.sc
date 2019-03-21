@@ -152,6 +152,12 @@ Standalone {
 			unixCmd(("cp -R" + quote(Standalone.dir +/+ "example_myproj")
 				+ quote(newAppLocation +/+  newAppName ++ "_proj").postln));
 
+			// not always working yet ...
+			this.filterIDEConfigFile;
+
+			this.writeSClangConfigFile(newIntExtDir);
+
+
 			"*** Standalone is ready to go! Please quit this app, and open your standalone...".postln;
 
 			// "\n% - countdown for wakeup kiss: \n".postf(thisMethod);
@@ -160,6 +166,37 @@ Standalone {
 			// unixCmd("open" + pathToNewApp);
 
 		}
+	}
+
+	/// FIXME - filterIDEConfigFile not working reliably yet
+	/// because sometimes the new app clobbers the copied file on startup.
+
+	*filterIDEConfigFile {
+		var my_ideConfStr = File.use(Platform.userAppSupportDir +/+ "sc_ide_conf.yaml", "r", (_.readAllString));
+		var ideLines = my_ideConfStr.split($\n);
+		var configLineIndex = ideLines.detectIndex(_.contains("    configFile:"));
+		var standaloneIndex = ideLines.detectIndex(_.contains("    standalone:"));
+		var new_ideConfStr;
+
+		ideLines.put( configLineIndex, "configFile: \"\"");
+		ideLines.put( standaloneIndex, "standalone: false");
+		new_ideConfStr = ideLines.join($\n).postcs;
+
+		File.use(newAppSupportDir +/+ "sc_ide_conf.yaml", "w", (_.write(new_ideConfStr)));
+		File.use(newAppResDir +/+ "sc_ide_conf.yaml", "w", (_.write(new_ideConfStr)));
+	}
+
+	*writeSClangConfigFile { |newIntExtDir|
+		var new_sclangConfStr =
+		"includePaths:\n"
+		"    -   %\n"
+		"excludePaths:\n"
+		"    []\n"
+		"postInlineWarnings: %\n"
+		.format(newIntExtDir.standardizePath, LanguageConfig.postInlineWarnings).postcs;
+
+		File.use(newAppSupportDir +/+ "sclang_conf.yaml", "w", (_.write(new_sclangConfStr)));
+		File.use(newAppResDir +/+ "sclang_conf.yaml", "w", (_.write(new_sclangConfStr)));
 	}
 
 	*appPath { ^String.scDir.dirname.dirname }

@@ -3,17 +3,17 @@
 THIS FILE REPAIRS Standalone apps made with SC3.
 
 1. It checks whether macOS puts the app under "quarantine"
-	and if so, advises how to delete the quarantine label.
+and if so, advises how to delete the quarantine label.
 
 2. It checks whether the Standalone will interfere with SC3,
-	warns if it does, and advises to remake the standalone.
+warns if it does, and advises to remake the standalone.
 
 3. It adds a list of folders to the classlib configuration file,
-	typically a single folder with all quarks to be added
+typically a single folder with all quarks to be added
 
 4. It removes non/existent dirs from the includePaths,
-	to avoid problems with relative paths after that may
-	arise when moving the app to a different location.
+to avoid problems with relative paths after that may
+arise when moving the app to a different location.
 
 
 //// to test filtering, add a folder to LanguageConfig that will be removed:
@@ -42,8 +42,13 @@ var classDirPlacesToKeep = [
 /// if true, app will recompile automagically on startup
 /// when this script had to change any includePath:
 var autoRecompile = true;
+var needsRecompile = false;
 
 var currIncludePaths = LanguageConfig.includePaths;
+
+var exportedIDEPrefsPath, newIDEPrefsPath;
+var exportedLangPrefsPath, newLangPrefsPath;
+
 
 
 "\n\n*** standaloneSelfRepair.scd script runs ...\n\n".postln;
@@ -70,6 +75,38 @@ if (Platform.userAppSupportDir.split($/).last == "SuperCollider") {
 	this.halt;
 } {
 	"*** OK: userAppSupportDir will not interfere with SuperCollider.".postln;
+};
+
+////// 3. move exported preferences to userAppSupportDir
+exportedIDEPrefsPath  = String.scDir +/+ "sc_ide_conf.yaml";
+exportedLangPrefsPath = String.scDir +/+ "sclang_conf.yaml";
+newIDEPrefsPath  = Platform.userAppSupportDir +/+ "sc_ide_conf.yaml";
+newLangPrefsPath = Platform.userAppSupportDir +/+ "sclang_conf.yaml";
+
+if (File.exists(exportedIDEPrefsPath) and: File.exists(newIDEPrefsPath).not) {
+	"copying exported IDE prefs file: ".postln;
+	unixCmd( ("cp" + quote(exportedIDEPrefsPath) + quote(newIDEPrefsPath)).postln);
+	needsRecompile = true;
+};
+if (File.exists(exportedLangPrefsPath) and: File.exists(newLangPrefsPath).not) {
+	"copying exported sclang prefs file: ".postln;
+	unixCmd( ("cp" + quote(exportedIDEPrefsPath) + quote(newIDEPrefsPath)).postln);
+	needsRecompile = true;
+};
+
+if (needsRecompile) {
+	"*** PLEASE QUIT AND RESTART THE APP, so the exported preference files can be used.".postln;
+	if (autoRecompile) {
+		"*** will autoRecompile in 3 seconds ...\n\n\n".postln;
+		forkIfNeeded {
+			(3..1).do { |i| i.postln; 1.wait };
+			thisProcess.recompile;
+		}
+	} {
+		"*** Please reboot interpreter by hand!".postln;
+		"\n*** STOPPING HERE.\n\n".postln;
+		this.halt;
+	}
 };
 
 ////// post info
