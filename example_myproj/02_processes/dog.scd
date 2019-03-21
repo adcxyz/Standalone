@@ -1,14 +1,26 @@
 // SOUND 1,  from orig Influx Example
 (
-Ndef(\dog).addSpec(\intv, [-24, 24]);
-Ndef(\dog).addSpec(\timescale, [0.01, 10, \exp]);
-Ndef(\dog).addSpec(\curve, [-10, 10]);
-Ndef(\dog).addSpec(\ffreq, \freq);
+// // // if JITLibExtensions are used, you can make space local:
+// Ndef(\dog).addSpec(\intv, [-24, 24]);
+// Ndef(\dog).addSpec(\timescale, [0.01, 10, \exp]);
+// Ndef(\dog).addSpec(\curve, [-10, 10]);
+// Ndef(\dog).addSpec(\ffreq, \freq);
+//
+// Ndef(\dog).addSpec(\loopnode, [0, 12]);
+// Ndef(\dog).addSpec(\dens, [10, 1000, \exp]);
+// Ndef(\dog).addSpec(\resfreq, \freq);
+// Ndef(\dog).addSpec(\ringtime, [0.01, 1, \exp]);
 
-Ndef(\dog).addSpec(\loopnode, [0, 12]);
-Ndef(\dog).addSpec(\dens, [10, 1000, \exp]);
-Ndef(\dog).addSpec(\resfreq, \freq);
-Ndef(\dog).addSpec(\ringtime, [0.01, 1, \exp]);
+Spec.add(\intv, [-24, 24]);
+Spec.add(\timescale, [0.01, 10, \exp]);
+Spec.add(\curve, [-10, 10]);
+Spec.add(\ffreq, \freq);
+
+Spec.add(\loopnode, [0, 12]);
+Spec.add(\dens, [10, 1000, \exp]);
+Spec.add(\resfreq, \freq);
+Spec.add(\ringtime, [0.01, 1, \exp]);
+
 
 Ndef(\dog, { |amp=0, freq=250, intv=19, timescale=1, curve=0, loopnode=0, dens = 10, resfreq = 500, ringtime = 0.01|
 	var n = 15;
@@ -29,9 +41,11 @@ Ndef(\dog, { |amp=0, freq=250, intv=19, timescale=1, curve=0, loopnode=0, dens =
 });
 );
 
-Ndef(\dog).addHalo(\orderedNames, Ndef(\dog).controlKeys);
+Ndef(\dog).set(\amp, 0.2).vol_(0.2);
+Ndef(\dog).gui.moveTo(400, 380);
 
 /*
+// Ndef(\dog).addHalo(\orderedNames, Ndef(\dog).controlKeys);
 Ndef(\dog).controlKeys;
 Ndef(\dog).vol_(0.5);
 NdefPreset( Ndef(\dog) ).loadSettings;
