@@ -10,6 +10,37 @@ q = q ? ();
 ////////// open this startupfile in the app
 thisProcess.nowExecutingPath.openOS;
 
+///////////////// TELL the server program where to read plugins from //////////
+/*
+Explanation: by default, scsynth reads plugins from two places:
+1. Those packaged inside the app (at String.scDir +/+ "plugins")
+---> this is as intended
+2. From ~/Library/Application Support/SuperCollider/Extensions
+---> this creates an unpredictable dependency of the standalone on circumstances:
+     if the user on that computer has used SuperCollider and installed sc3-plugins,
+     these will be present and loaded; if not, they wont be there.
+*/
+
+///// Option 1 - minimal: read just the plugins inside the app, no extensions
+s.options.ugenPluginsPath = String.scDir +/+ "plugins";
+
+///// Option 2 - more plugins, still self-contained: read internal plugins
+///// PLUS any plugins found in the Standalone's internal Extensions dir.
+////// this is the recommended option for Standalones!
+s.options.ugenPluginsPath =
+([ String.scDir +/+ "plugins" ]
+++ [Standalone.internalExtDir]).join($:);
+
+// ///// Option 3 - more flexible, less self-contained: read internal plugins
+// ///// PLUS those in internalExtDir, and the Standalone 's userAppSupportDir:
+// s.options.ugenPluginsPath =
+// ([ String.scDir +/+ "plugins" ]
+// ++ [
+// 	Standalone.internalExtDir,
+// 	Platform.userAppSupportDir
+// ]).join($:)
+
+
 Task {
 
 	var standaloneClass = \Standalone.asClass;
