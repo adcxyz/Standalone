@@ -12,7 +12,7 @@ Standalone {
 	*codefiledir { ^this.dir +/+ "codefiles/" }
 
 	*initClass {
-		internalExtDir = String.scDir +/+ internalExtDirName;
+		internalExtDir = Platform.resourceDir +/+ internalExtDirName;
 		if (this.locksOnStartup) { this.activate };
 	}
 
@@ -25,7 +25,7 @@ Standalone {
 		newAppResDir = pathToNewApp +/+ "Contents/Resources";
 		newAppSupportDir = Platform.userConfigDir.dirname +/+ newAppName;
 
-		pathToThisApp = String.scDir.dirname.dirname;
+		pathToThisApp = Platform.resourceDir.dirname.dirname;
 
 		if (newAppName.size < 10) {
 			"App name must be at least 10 chars long to have an independent userAppSupportDir."
@@ -199,7 +199,7 @@ Standalone {
 		File.use(newAppResDir +/+ "sclang_conf.yaml", "w", (_.write(new_sclangConfStr)));
 	}
 
-	*appPath { ^String.scDir.dirname.dirname }
+	*appPath { ^Platform.resourceDir.dirname.dirname }
 	*appDir { ^this.appPath.dirname }
 	*appName { ^this.appPath.basename.splitext.first }
 
@@ -209,7 +209,7 @@ Standalone {
 
 	*isInClassLib { |post = true|
 		var res = this.filenameSymbol.asString.beginsWith(
-			String.scDir +/+ "SCClassLibrary");
+			Platform.resourceDir +/+ "SCClassLibrary");
 		if (post) {
 			if (res.not) {
 				"*** Standalone.sc is not in SCClassLibrary yet.\n"
@@ -246,7 +246,7 @@ Standalone {
 		if (this.isInIntExt(false)) { copyCmd = "mv" };
 
 		currPath = this.filenameSymbol.asString;
-		newPath = String.scDir +/+ "SCClassLibrary/" +/+ currPath.basename;
+		newPath = Platform.resourceDir +/+ "SCClassLibrary/" +/+ currPath.basename;
 
 		if (currPath != newPath) {
 			"*** moving Standalone.sc to internal class lib: ***".postln;
@@ -256,7 +256,7 @@ Standalone {
 			+/+ "HelpSource/Standalone.schelp";
 			if(File.exists(schelpPath)) {
 				"*** moving Standalone.schelp to internal HelpSource: ***".postln;
-				newSchelpPath = String.scDir +/+ "HelpSource/Standalone.schelp";
+				newSchelpPath = Platform.resourceDir +/+ "HelpSource/Standalone.schelp";
 				unixCmd((copyCmd + "-f" + quote(schelpPath)
 					+ quote(newSchelpPath)).postcs);
 			}
@@ -264,7 +264,7 @@ Standalone {
 		^true
 	}
 
-	*lockupPath { ^( String.scDir +/+ lockupFilename) }
+	*lockupPath { ^( Platform.resourceDir +/+ lockupFilename) }
 
 	*locksOnStartup {
 		var foundPath;

@@ -28,9 +28,9 @@ Quarks.install("DayTimer");
 var classDirsToAdd = [
 	/////// RECOMMENDED: ONLY add a path to extensions inside the app,
 	/////// where all quarks to be included are copied to:
-	String.scDir +/+ "InternalExtensions";
+	Platform.resourceDir +/+ "InternalExtensions";
 	/////// OR SECOND CHOICE: add a relative path directly next to <Stehallein>.app folder...
-	// String.scDir.dirname.dirname.dirname +/+ "InternalExtensions"
+	// Platform.resourceDir.dirname.dirname.dirname +/+ "InternalExtensions"
 ].collect(_.standardizePath);
 
 var classDirPlacesToKeep = [

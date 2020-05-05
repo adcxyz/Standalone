@@ -1,6 +1,6 @@
 + OSXPlatform {
 	startupFiles {
-		^[String.scDir +/+ "startup.scd"]
+		^[Platform.resourceDir +/+ "startup.scd"]
 	}
 }
 

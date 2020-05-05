@@ -13,7 +13,7 @@ thisProcess.nowExecutingPath.openOS;
 ///////////////// TELL the server program where to read plugins from //////////
 /*
 Explanation: by default, scsynth reads plugins from two places:
-1. Those packaged inside the app (at String.scDir +/+ "plugins")
+1. Those packaged inside the app (at Platform.resourceDir +/+ "plugins")
 ---> this is as intended
 2. From ~/Library/Application Support/SuperCollider/Extensions
 ---> this creates an unpredictable dependency of the standalone on circumstances:
@@ -22,19 +22,19 @@ Explanation: by default, scsynth reads plugins from two places:
 */
 
 ///// Option 1 - minimal: read just the plugins inside the app, no extensions
-s.options.ugenPluginsPath = String.scDir +/+ "plugins";
+s.options.ugenPluginsPath = Platform.resourceDir +/+ "plugins";
 
 ///// Option 2 - more plugins, still self-contained: read internal plugins
 ///// PLUS any plugins found in the Standalone's internal Extensions dir.
 ////// this is the recommended option for Standalones!
 s.options.ugenPluginsPath =
-([ String.scDir +/+ "plugins" ]
+([ Platform.resourceDir +/+ "plugins" ]
 ++ [Standalone.internalExtDir]).join($:);
 
 // ///// Option 3 - more flexible, less self-contained: read internal plugins
 // ///// PLUS those in internalExtDir, and the Standalone 's userAppSupportDir:
 // s.options.ugenPluginsPath =
-// ([ String.scDir +/+ "plugins" ]
+// ([ Platform.resourceDir +/+ "plugins" ]
 // ++ [
 // 	Standalone.internalExtDir,
 // 	Platform.userAppSupportDir
@@ -63,7 +63,7 @@ Task {
 	////// set the path to the project folder:
 	/// q.projdir = "~/Desktop/StehAllein_proj";
 	// set to an example folder next to the <Standalone>.app:
-	q.projdir = String.scDir.dirname.dirname.drop(-4) ++ "_proj";
+	q.projdir = Platform.resourceDir.dirname.dirname.drop(-4) ++ "_proj";
 
 	// name of the loadfile begins with ""00_load
 	q.loadfilename = "00_load*.scd";
