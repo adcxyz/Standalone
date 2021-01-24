@@ -178,8 +178,13 @@ Standalone {
 		var standaloneIndex = ideLines.detectIndex(_.contains("    standalone:"));
 		var new_ideConfStr;
 
-		ideLines.put( configLineIndex, "configFile: \"\"");
-		ideLines.put( standaloneIndex, "standalone: false");
+		if (configLineIndex.notNil) {
+			ideLines.put( configLineIndex, "configFile: \"\"");
+		};
+		if (standaloneIndex.notNil) {
+			ideLines.put( standaloneIndex, "standalone: false");
+		};
+
 		new_ideConfStr = ideLines.join($\n).postcs;
 
 		File.use(newAppSupportDir +/+ "sc_ide_conf.yaml", "w", (_.write(new_ideConfStr)));
